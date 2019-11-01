@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
   listaItem: {
     borderColor: 'black',
     borderWidth: 1,
-    marginVertical:15
+    marginVertical: 15
   },
 
   tituloTabela: {
@@ -48,9 +48,15 @@ const mockData = [
   }
 ]
 
-recuperarMedicos = async () = {
-  
+_tratarData = (data) => {
+  let valores = data.split('T')
+  let dataRecebida = valores[0].split('-');
+  return dataRecebida[2] + '/' + dataRecebida[1] + '/' + dataRecebida[0];
 }
+
+// recuperarMedicos = async() = {
+
+// }
 
 export default class cleveland extends Component {
   render() {
@@ -60,7 +66,7 @@ export default class cleveland extends Component {
           <View style={styles.listaItem}>
             <Text styles={styles.tituloTabela}>#: {item.idMedico}</Text>
             <Text styles={styles.tituloTabela}>Nome: {item.nome}</Text>
-            <Text styles={styles.tituloTabela}>DataNascimento {item.dataNascimento}</Text>
+            <Text styles={styles.tituloTabela}>DataNascimento {_tratarData(item.dataNascimento)}</Text>
             <Text styles={styles.tituloTabela}>CRM: {item.crm}</Text>
             <Text styles={styles.tituloTabela}>Ativo: {item.ativo}</Text>
             <Text styles={styles.tituloTabela}>Especialidade: {item.especialidade.nome}</Text>
