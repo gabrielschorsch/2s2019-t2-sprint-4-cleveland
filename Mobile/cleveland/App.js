@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet, ScrollView, TextInput, TouchableOpacity } from 'react-native';
+
+import DatePicker from 'react-native-datepicker';
 
 const styles = StyleSheet.create({
 
@@ -23,42 +25,26 @@ const styles = StyleSheet.create({
 })
 
 
-const mockData = [
-  {
-    idMedico: 1,
-    nome: 'Doutor Drauzio Varella',
-    dataNascimento: '2019-11-01T:00:00:0000',
-    crm: 11,
-    ativo: 1,
-    especialidade: {
-      idEspecialidade: 1,
-      nome: 'Otorrinolaringologista'
-    }
-  },
-  {
-    idMedico: 2,
-    nome: 'Doutor Drauzia Varello',
-    dataNascimento: '2019-10-01T:00:00:0000',
-    crm: 12,
-    ativo: 1,
-    especialidade: {
-      idEspecialidade: 1,
-      nome: 'Otorrinolaringologista'
-    }
-  }
-]
-
 
 export default class cleveland extends Component {
   constructor() {
     super();
     this.state = {
-      listaMedicos: null
+      listaMedicos: [],
+      listaEsp: [],
+      nome: '',
+      dataNascimento: "2019-01-01T00:00:00",
+      crm: '',
+      idEspecialidade: 1
     }
   }
 
+  componentDidMount() {
+    this._recuperarMedicos();
+  }
+
   _recuperarMedicos = async () => {
-    await fetch('url')
+    await fetch('http://192.168.4.16:5000/api/medicos')
       .then(x => x.json())
       .then(x => this.setState({ listaMedicos: x }))
   }
@@ -69,23 +55,68 @@ export default class cleveland extends Component {
     return dataRecebida[2] + '/' + dataRecebida[1] + '/' + dataRecebida[0];
   }
 
+  _recuperarEspecialidades = async () => {
+    await fetch('http://192.168.4.16:5000/api/especialidades')
+      .then(x => x.json())
+      .then(x => this.setState({ listaEsp: x }))
+  }
+
+  _cadastrar = async () => {
+    console.log(this.state)
+    await fetch('http://192.168.4.16:5000/api/medicos',
+      {
+        method:'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }, body: JSON.stringify({
+          nome: this.state.nome,
+          dataNascimento: this.state.dataNascimento,
+          crm: this.state.crm,
+          idEspecialidade: this.state.idEspecialidade
+        })
+      })
+      .catch(x => console.warn(x))
+  }
+
+
 
 
   render() {
     return (
-      <View>
-        <FlatList data={mockData} style={styles.lista} keyExtractor={item => item.idMedico} renderItem={({ item }) => (
-          <View style={styles.listaItem}>
-            <Text styles={styles.tituloTabela}>#: {item.idMedico}</Text>
-            <Text styles={styles.tituloTabela}>Nome: {item.nome}</Text>
-            <Text styles={styles.tituloTabela}>DataNascimento {this._tratarData(item.dataNascimento)}</Text>
-            <Text styles={styles.tituloTabela}>CRM: {item.crm}</Text>
-            <Text styles={styles.tituloTabela}>Ativo: {item.ativo}</Text>
-            <Text styles={styles.tituloTabela}>Especialidade: {item.especialidade.nome}</Text>
-          </View>
-        )} />
 
-      </View>
+      <ScrollView>
+        <View>
+
+          <FlatList data={this.state.listaMedicos} style={styles.lista} keyExtractor={item => item.idMedico} renderItem={({ item }) => (
+            <View style={styles.listaItem}>
+              <Text styles={styles.tituloTabela}>#: {item.idMedico}</Text>
+              <Text styles={styles.tituloTabela}>Nome: {item.nome}</Text>
+              <Text styles={styles.tituloTabela}>DataNascimento {this._tratarData(item.dataNascimento)}</Text>
+              <Text styles={styles.tituloTabela}>CRM: {item.crm}</Text>
+              <Text styles={styles.tituloTabela}>Ativo: {item.ativo}</Text>
+              <Text styles={styles.tituloTabela}>Especialidade: {item.idEspecialidadeNavigation.nome}</Text>
+            </View>
+          )} />
+        </View>
+        <View>
+          <TextInput onChangeText={value => this.setState({ nome: value })} placeholder='Nome' />
+          <DatePicker
+            date={''} //initial date from state
+            mode="date" //The enum of date, datetime and time
+            placeholder="Data de Nascimento"
+            format="YYYY-MM-DDTHH:mm:SS"
+            maxDate="01-01-2019"
+            confirmBtnText="Confirm"
+            cancelBtnText="Cancel"
+            onDateChange={(date) => { this.setState({ dataNascimento: date }) }}
+          />
+          <TextInput onChangeText={value => this.setState({ crm: value })} placeholder='CRM' />
+          <TouchableOpacity onPress={this._cadastrar}>
+            <Text>Cadastrar</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     );
   }
 }
